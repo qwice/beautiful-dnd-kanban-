@@ -1,0 +1,47 @@
+.title {
+  text-align: center;
+  font-size: 50px;
+}
+
+.center{
+  display: flex; /* 부모 div를 flexbox로 설정 */
+  justify-content: center; /* 수평 중앙 정렬 */
+}
+
+.back {
+  gap: 10px;
+  justify-content: center; /* 수직 중앙 정렬 (옵션) */
+  padding: 10px;
+  background-color: antiquewhite;
+  border-radius: 8px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.wrap {
+  width: 300px; /* 칸반 보드의 너비 */
+  justify-content: center;
+  background-color: #f7f7f7;
+  border-radius: 8px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  margin: 8px;
+}
+
+.text {
+  background-color: #f7f7f7;
+  border-radius: 8px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  margin: 8px;
+  margin-bottom: 5px;
+}
+
+.card {
+  text-align: center;
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  padding: 12px;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+}
