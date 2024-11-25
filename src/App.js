@@ -1,80 +1,107 @@
 import './App.css';
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import data from "./tasks.js";
+import axios from "axios";
 
 function App() {
-  // test array
-  const [tasks, setTasks] = useState(data);
-  
   const categories = ["준비 목록", "진행중 목록", "완료 목록"];
-  const ready = [];
-  const ing = [];
-  const end = [];
 
-  tasks.forEach((task) => {
-    if(task.category === '준비 목록'){
-      ready.push(task.title)
-    }
-    else if(task.category === '진행중 목록'){
-      ing.push(task.title)
-    }
-    if(task.category === '완료 목록'){
-      end.push(task.title)
-    }
-  })
-  console.log(ready)
-  console.log(ing)
-  console.log(end)
+  // 상태를 category별로 분리
+  const [tasks, setTasks] = useState(data);
 
-  // drag가 끝났을 때 실행할 함수
+  useEffect(() => {
+    axios.get("http://localhost:8080/api/tasks")
+      .then(response => {
+        setTasks(response.data);
+      })
+      .catch(error => {
+        console.error("Error fetching tasks:", error);
+      });
+  }, []);
+
+  // Drag and Drop 완료 시 실행될 함수
   const onDragEnd = (result) => {
     const { source, destination } = result;
-
-    if(!destination) return;
-
-    const origin = []
-  }
+    console.log(result);
+  
+    // 드래그가 유효하지 않으면 종료
+    if (!destination) return;
+  
+    // 같은 위치로 이동한 경우
+    if (
+      destination.droppableId === source.droppableId && destination.index === source.index) {
+      return;
+    }
+  
+    const sourceCategory = source.droppableId;
+  
+    // Drag된 task 찾기
+    const draggedTask = tasks.find(
+      (task) => task.category === sourceCategory && task.title === result.draggableId
+    );
+    console.log('drag : ',draggedTask)
+  
+    if (!draggedTask) return;
+  
+    setTasks((prevTasks) => {
+      // 기존 tasks 복사
+      const updatedTasks = [...prevTasks];
+  
+      // 다른 카테고리로 이동한 경우
+      const removeIndex = updatedTasks.findIndex(task => task.title === result.draggableId)
+      console.log('removeIndex : ', removeIndex)
+      const remove = updatedTasks.splice(removeIndex, 1);
+      console.log('remove : ', remove);
+      const addIndex = updatedTasks.findIndex(task => task.category === destination.droppableId)
+      console.log('addIndex :', addIndex)
+      const filteredTasks = updatedTasks.filter((task) => task !== draggedTask);
+      console.log('1filter : ', filteredTasks)
+      filteredTasks.splice(addIndex + destination.index, 0, { ...draggedTask, category: destination.droppableId });
+      console.log('2filter : ', filteredTasks)
+      return [...filteredTasks]
+      });
+      
+  };
 
   return (
-    // DragDropContext ~ onDragEnd 필수
     <DragDropContext onDragEnd={onDragEnd}>
-      <h1 className="title">Test</h1><hr/>
-      <div className='center'>
-        {categories.map((category) => (
-          // {/* Droppable ~ droppableId 필수 */}
-          <Droppable droppableId={category} key={category}>
-            {/* Droppable에는 제공되는 props 존재-> children에 설정 */}
-            {(provided) => (
-              <div className='back' ref={provided.innerRef} {...provided.droppableProps}>
-                <div className='wrap'>
-                  <h2>{category}</h2>
-                  {tasks
-                  .filter((task) => task.category === category)
-                  .map((task ,index) => (
-                    // Draggable ~ draggableId, index 필수. draggableId와 key는 같아야 함.
-                    <Draggable draggableId={task.category} index={index} key={task.category}> 
-                      {/* Draggable에는 제공되는 props 존재-> children에 설정 */}
-                      {(provided) => (
-                        <div
-                          className='text'
-                          ref={provided.innerRef}
-                          // 아래 2개의 props가 모두 있어야 요소를 컨트롤할 수 있다.
-                          {...provided.draggableProps} // controls the movement of the draggable
-                          {...provided.dragHandleProps} // drag handle
+      <h1 className="title">Test</h1><hr />
+      <div className="center">
+        <div className="back">
+          {categories.map((category) => (
+            <Droppable droppableId={category} key={category}>
+              {(provided) => (
+                <div ref={provided.innerRef} {...provided.droppableProps}>
+                  <div className="wrap">
+                    <h2>{category}</h2>
+                    {tasks
+                      .filter((task) => task.category === category)
+                      .map((task, index) => (
+                        <Draggable
+                          draggableId={task.title}
+                          index={index}
+                          key={task.title}
                         >
-                          {task.title}
-                        </div>
-                      )}
-                    </Draggable>  
-                  ))}
+                          {(provided) => (
+                            <div
+                              className="text"
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                            >
+                              {task.title}
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
+                  </div>
+                  {provided.placeholder}
                 </div>
-                {/* drag할 때, droppable의 영역이 변하지 않게 설정 */}
-                {provided.placeholder}
-              </div>
-            )}
-          </Droppable>
-        ))}
+              )}
+            </Droppable>
+          ))}
+        </div>
       </div>
     </DragDropContext>
   );

@@ -9,6 +9,7 @@
 }
 
 .back {
+  display: flex;
   gap: 10px;
   justify-content: center; /* 수직 중앙 정렬 (옵션) */
   padding: 10px;
